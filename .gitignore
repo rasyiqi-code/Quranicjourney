@@ -1,0 +1,158 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.tmp
+*.temp
+*~
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code related
+.vscode/
+.vscode-test
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+coverage/
+lcov.info
+
+# Generated files (Flutter/Dart)
+*.dart.js
+*.js_
+*.js.deps
+*.js.map
+*.info.json
+*.mocks.dart
+*.g.dart
+*.freezed.dart
+*.config.dart
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio / Gradle
+/android/app/debug
+/android/app/profile
+/android/app/release
+/android/app/build/
+/android/.gradle/
+/android/captures/
+/android/local.properties
+# CRITICAL: Android signing keys (DO NOT PUSH TO GITHUB!)
+/android/key.properties
+/android/app/*.jks
+/android/app/*.keystore
+/android/app/google-services.json
+
+# iOS build artifacts
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Flutter.podspec
+# CRITICAL: iOS signing files (DO NOT PUSH TO GITHUB!)
+/ios/Runner/GoogleService-Info.plist
+*.mobileprovision
+*.p12
+*.cer
+
+# Platform ephemeral folders
+/linux/flutter/ephemeral/
+/macos/Flutter/ephemeral/
+/windows/flutter/ephemeral/
+
+# Web build artifacts
+/web/flutter_service_worker.js
+**/web/manifest.json
+**/web/sw.js
+**/web/workbox-*.js
+
+# Node / NPM / Yarn
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# Javascript Frameworks (Next, Nuxt, Vuepress, etc)
+.next
+.nuxt
+.vuepress/dist
+.serverless
+.fusebox/
+.webpack/
+
+# Firebase / Supabase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.supabase/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Database files
+*.hive
+*.hivedb
+*.db
+*.sqlite
+*.sqlite3
+.dynamodb/
+
+# Logs & Runtime
+logs/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Debug & Credentials
+pglite-debug.log
+.gemini/
+gha-creds-*.json
+.tern-port
+
+# Large media files (uncomment if needed)
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.mp4
+# *.webm
+
+# Exceptions
+!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
