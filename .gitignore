@@ -59,14 +59,13 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio / Gradle
-/android/app/debug
-/android/app/profile
-/android/app/release
-/android/app/build/
 /android/build/
+/android/app/build/
 /android/.gradle/
+/android/app/.cxx/
 /android/captures/
 /android/local.properties
+
 # CRITICAL: Android signing keys (DO NOT PUSH TO GITHUB!)
 /android/key.properties
 /android/app/*.jks
@@ -79,6 +78,7 @@ app.*.map.json
 /ios/Flutter/App.framework
 /ios/Flutter/Flutter.framework
 /ios/Flutter/Flutter.podspec
+
 # CRITICAL: iOS signing files (DO NOT PUSH TO GITHUB!)
 /ios/Runner/GoogleService-Info.plist
 *.mobileprovision
