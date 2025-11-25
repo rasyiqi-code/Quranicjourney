@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/donation_tier.dart';
 
 /// Service untuk menangani donasi dengan In-App Purchase
@@ -88,10 +89,10 @@ class DonationService {
     );
 
     try {
-      // Buy consumable (donation can be purchased multiple times)
-      final bool success = await _iap.buyConsumable(
+      // Use buyNonConsumable for both One-Time (Managed) and Subscription products
+      // buyConsumable is only for products that can be bought multiple times (e.g. coins)
+      final bool success = await _iap.buyNonConsumable(
         purchaseParam: purchaseParam,
-        autoConsume: true, // Auto-consume after purchase
       );
 
       return success;
@@ -116,7 +117,8 @@ class DonationService {
         _verifyAndDeliverProduct(purchaseDetails);
       }
 
-      // Mark purchase as done (required)
+      // Mark purchase as done (required for both Consumables and Non-Consumables)
+      // This acknowledges the purchase on Android
       if (purchaseDetails.pendingCompletePurchase) {
         _iap.completePurchase(purchaseDetails);
       }
@@ -125,8 +127,9 @@ class DonationService {
 
   /// Verify and deliver purchased product
   Future<void> _verifyAndDeliverProduct(PurchaseDetails purchaseDetails) async {
-    // TODO: Verify purchase with your backend server
-    // For now, we just save to history
+    // NOTE: In production, verify purchase with your backend server
+    // to prevent fraud. See: https://developer.android.com/google/play/billing/security
+    // For now, we save to local history without server verification
     final tier = getTierById(purchaseDetails.productID);
     if (tier != null) {
       await saveDonationHistory(tier);
@@ -154,12 +157,22 @@ class DonationService {
     }
   }
 
-  /// Save donation history (untuk implementasi future)
+  /// Save donation history
   Future<void> saveDonationHistory(DonationTier tier) async {
-    // TODO: Save ke local storage atau database
-    // Untuk sekarang hanya simulasi
-    await Future.delayed(const Duration(milliseconds: 500));
-    debugPrint('IAP: Donation saved: ${tier.formattedAmount}');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final List<String> history =
+          prefs.getStringList('donation_history') ?? [];
+
+      // Store donation record in simple format: "id|name|timestamp"
+      history
+          .add('${tier.id}|${tier.name}|${DateTime.now().toIso8601String()}');
+
+      await prefs.setStringList('donation_history', history);
+      debugPrint('IAP: Donation saved: ${tier.name}');
+    } catch (e) {
+      debugPrint('IAP: Error saving donation history: $e');
+    }
   }
 
   /// Dispose and clean up

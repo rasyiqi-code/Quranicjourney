@@ -51,14 +51,33 @@ class _FunfactListScreenState extends State<FunfactListScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryGreen,
+                AppTheme.darkGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        toolbarHeight: 48,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           languageCode == 'en' ? 'Islamic Fun Facts' : 'Funfact Islam',
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Column(
         children: [

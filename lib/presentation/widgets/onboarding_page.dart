@@ -24,7 +24,7 @@ class OnboardingPage extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             backgroundColor,
-            backgroundColor.withOpacity(0.7),
+            backgroundColor.withValues(alpha: 0.7),
           ],
         ),
       ),
@@ -40,11 +40,11 @@ class OnboardingPage extends StatelessWidget {
                 height: 280,
                 width: 280,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(40),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -75,7 +75,7 @@ class OnboardingPage extends StatelessWidget {
                 description,
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   height: 1.6,
                 ),
                 textAlign: TextAlign.center,

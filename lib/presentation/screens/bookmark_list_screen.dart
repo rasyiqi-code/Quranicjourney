@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/bookmark_provider.dart';
+import '../theme/app_theme.dart';
 import 'quran_reader_screen.dart';
 
 class BookmarkListScreen extends StatelessWidget {
@@ -10,7 +11,35 @@ class BookmarkListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bookmark Saya'),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryGreen,
+                AppTheme.darkGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        toolbarHeight: 48,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Bookmark Saya',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
       body: Consumer<BookmarkProvider>(
         builder: (context, provider, child) {
@@ -52,7 +81,8 @@ class BookmarkListScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
                     child: Text(
                       '${bookmark.surahNumber}',
                       style: TextStyle(
@@ -71,13 +101,15 @@ class BookmarkListScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(bookmark.reference),
-                      if (bookmark.note != null && bookmark.note!.isNotEmpty) ...[
+                      if (bookmark.note != null &&
+                          bookmark.note!.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
                           bookmark.note!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontStyle: FontStyle.italic,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    fontStyle: FontStyle.italic,
+                                  ),
                         ),
                       ],
                     ],
@@ -85,7 +117,8 @@ class BookmarkListScreen extends StatelessWidget {
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     onPressed: () {
-                      provider.removeBookmark(bookmark.surahNumber, bookmark.ayahNumber);
+                      provider.removeBookmark(
+                          bookmark.surahNumber, bookmark.ayahNumber);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Bookmark dihapus')),
                       );
@@ -111,4 +144,3 @@ class BookmarkListScreen extends StatelessWidget {
     );
   }
 }
-

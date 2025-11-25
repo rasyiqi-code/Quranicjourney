@@ -153,15 +153,22 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: AppTheme.backgroundGradient,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryGreen,
+                AppTheme.darkGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
         ),
-        toolbarHeight: 56,
+        toolbarHeight: 48,
         leading: IconButton(
-          icon: Icon(
+          icon: const Icon(
             Icons.arrow_back_ios_rounded,
-            color: AppTheme.primaryGreen,
+            color: Colors.white,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -177,7 +184,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                   isBookmarked
                       ? Icons.bookmark_rounded
                       : Icons.bookmark_border_rounded,
-                  color: AppTheme.primaryGreen,
+                  color: Colors.white,
                 ),
                 iconSize: 22,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -219,7 +226,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
               _showTranslation
                   ? Icons.translate_rounded
                   : Icons.translate_outlined,
-              color: AppTheme.primaryGreen,
+              color: Colors.white,
             ),
             iconSize: 22,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -234,7 +241,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
           IconButton(
             icon: Icon(
               _autoPlay ? Icons.autorenew_rounded : Icons.highlight_off_rounded,
-              color: AppTheme.primaryGreen,
+              color: Colors.white,
             ),
             iconSize: 22,
             padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -254,9 +261,9 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
             tooltip: _autoPlay ? 'Matikan Auto-Play' : 'Aktifkan Auto-Play',
           ),
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.list_rounded,
-              color: AppTheme.primaryGreen,
+              color: Colors.white,
             ),
             iconSize: 22,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),

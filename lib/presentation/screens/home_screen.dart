@@ -5,7 +5,7 @@ import 'funfact_list_screen.dart';
 import 'quran_reader_screen.dart';
 import 'surah_list_screen.dart';
 import 'bookmark_list_screen.dart';
-import 'search_screen.dart';
+import 'random_ayah_screen.dart';
 import 'donation_screen.dart';
 import '../widgets/modern_progress_card.dart';
 import '../widgets/modern_feature_card.dart';
@@ -179,8 +179,8 @@ class HomeScreen extends StatelessWidget {
           children: [
             Expanded(
               child: ModernFeatureCard(
-                title: AppStrings.get(context, 'featureSearch'),
-                icon: Icons.search_rounded,
+                title: AppStrings.get(context, 'featureRandomAyah'),
+                icon: Icons.auto_awesome_rounded,
                 color: const Color(0xFF6A1B9A),
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
@@ -191,7 +191,7 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     PageTransitions.slideRoute(
-                      const SearchScreen(),
+                      const RandomAyahScreen(),
                     ),
                   );
                 },

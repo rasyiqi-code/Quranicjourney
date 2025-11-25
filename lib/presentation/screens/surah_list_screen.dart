@@ -67,119 +67,151 @@ class _SurahListScreenState extends State<SurahListScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        title: Text(
-          languageCode == 'en' ? 'Surah List' : 'Daftar Surah',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Container(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryGreen,
+                    AppTheme.darkGreen,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-              ],
-            ),
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(fontSize: 16),
-              decoration: InputDecoration(
-                hintText:
-                    languageCode == 'en' ? 'Search surah...' : 'Cari surah...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: Icon(Icons.search, color: AppTheme.primaryGreen),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, size: 20),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.grey[100],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryGreen.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              onChanged: (value) => setState(() {}),
-            ),
-          ),
-          // Filter chips
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  _buildFilterChip(
-                    languageCode == 'en' ? 'All' : 'Semua',
-                    'all',
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_rounded,
+                        color: Colors.white),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Makki', 'makki'),
-                  const SizedBox(width: 8),
-                  _buildFilterChip('Madani', 'madani'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      languageCode == 'en' ? 'Surah List' : 'Daftar Surah',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-          // Surah list
-          Expanded(
-            child: _filteredSurahs.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 80,
-                          color: Colors.grey[300],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          languageCode == 'en'
-                              ? 'No surah found'
-                              : 'Tidak ada surah ditemukan',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    itemCount: _filteredSurahs.length,
-                    itemBuilder: (context, index) {
-                      final surah = _filteredSurahs[index];
-                      return _buildSurahCard(context, surah, languageCode);
-                    },
+            // Search bar
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
-          ),
-        ],
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(fontSize: 16),
+                decoration: InputDecoration(
+                  hintText: languageCode == 'en'
+                      ? 'Search surah...'
+                      : 'Cari surah...',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.search, color: AppTheme.primaryGreen),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, size: 20),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                ),
+                onChanged: (value) => setState(() {}),
+              ),
+            ),
+            // Filter chips
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    _buildFilterChip(
+                      languageCode == 'en' ? 'All' : 'Semua',
+                      'all',
+                    ),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Makki', 'makki'),
+                    const SizedBox(width: 8),
+                    _buildFilterChip('Madani', 'madani'),
+                  ],
+                ),
+              ),
+            ),
+            // Surah list
+            Expanded(
+              child: _filteredSurahs.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 80,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            languageCode == 'en'
+                                ? 'No surah found'
+                                : 'Tidak ada surah ditemukan',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      itemCount: _filteredSurahs.length,
+                      itemBuilder: (context, index) {
+                        final surah = _filteredSurahs[index];
+                        return _buildSurahCard(context, surah, languageCode);
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

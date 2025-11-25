@@ -32,7 +32,7 @@ class AppStrings {
       'featureSurahList': 'Surah',
       'featureTadabbur': 'Tadabbur',
       'featureFunfact': 'Funfact',
-      'featureSearch': 'Cari',
+      'featureRandomAyah': 'Ayat Acak',
       'featureBookmark': 'Bookmark',
       'learningPath': 'Jalur Pembelajaran',
       'startSetup': 'Mulai Setup',
@@ -53,6 +53,14 @@ class AppStrings {
           'Aplikasi ini dibuat untuk umat. Dukungan Anda membantu kami terus mengembangkan fitur-fitur bermanfaat lainnya.',
       'donateNow': 'Donasi Sekarang',
       // Donation Tiers
+      'donationTitle': 'Donasi Lillahi Ta\'ala',
+      'donationSubtitle':
+          'Dukungan Anda membantu pengembangan aplikasi ini untuk umat',
+      'iapUnavailable':
+          'In-App Purchase tidak tersedia. Pastikan device terhubung ke Play Store.',
+      'chooseAmount': 'Pilih Nominal',
+      'donationHeaderSubtitle': 'Sedekah jariyah untuk kemajuan aplikasi',
+      'loading': 'Memuat...',
       'donationScreenTitle': 'Dukung Quranic Journey',
       'donationScreenSubtitle': 'Pilih tier donasi Anda',
       'selectTier': 'Pilih Tier',
@@ -399,7 +407,7 @@ class AppStrings {
       'featureSurahList': 'Surah',
       'featureTadabbur': 'Tadabbur',
       'featureFunfact': 'Funfact',
-      'featureSearch': 'Search',
+      'featureRandomAyah': 'Random Ayah',
       'featureBookmark': 'Bookmark',
       'learningPath': 'Learning Path',
       'startSetup': 'Start Setup',
@@ -420,6 +428,14 @@ class AppStrings {
           'This app is built for the Ummah. Your support helps us continue developing useful features.',
       'donateNow': 'Donate Now',
       // Donation Tiers
+      'donationTitle': 'Donation Lillahi Ta\'ala',
+      'donationSubtitle':
+          'Your support helps the development of this app for the Ummah',
+      'iapUnavailable':
+          'In-App Purchase unavailable. Ensure device is connected to Play Store.',
+      'chooseAmount': 'Choose Amount',
+      'donationHeaderSubtitle': 'Sadaqah jariyah for app progress',
+      'loading': 'Loading...',
       'donationScreenTitle': 'Support Quranic Journey',
       'donationScreenSubtitle': 'Choose your donation tier',
       'selectTier': 'Select Tier',

@@ -4,7 +4,6 @@ import '../../core/l10n/app_strings.dart';
 import '../../core/models/donation_tier.dart';
 import '../../core/services/donation_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/donation_tier_card.dart';
 
 class DonationScreen extends StatefulWidget {
   const DonationScreen({super.key});
@@ -74,52 +73,33 @@ class _DonationScreenState extends State<DonationScreen> {
                       const SizedBox(height: 16),
                       Container(
                         padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppTheme.primaryGreen,
-                              AppTheme.lightGreen,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  AppTheme.primaryGreen.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
+                        decoration: AppTheme.glassmorphism(),
                         child: Column(
                           children: [
                             Icon(
                               Icons.favorite_rounded,
-                              color: Colors.white,
+                              color: AppTheme.primaryGreen,
                               size: 48,
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              AppStrings.get(context, 'donationTitle'),
+                              'Donasi Lillahi Ta\'ala',
                               style: Theme.of(context)
                                   .textTheme
                                   .titleLarge
                                   ?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
                                   ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              AppStrings.get(context, 'donationSubtitle'),
+                              'Dukungan Anda membantu pengembangan aplikasi ini untuk umat',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    color: Colors.grey[600],
                                   ),
                               textAlign: TextAlign.center,
                             ),
@@ -147,7 +127,7 @@ class _DonationScreenState extends State<DonationScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  AppStrings.get(context, 'iapUnavailable'),
+                                  'In-App Purchase tidak tersedia. Pastikan device terhubung ke Play Store.',
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodySmall
@@ -162,11 +142,10 @@ class _DonationScreenState extends State<DonationScreen> {
                       ],
                       const SizedBox(height: 24),
                       Text(
-                        AppStrings.get(context, 'chooseAmount'),
+                        'Pilih Nominal',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: AppTheme.primaryGreen,
                                 ),
                       ),
                       const SizedBox(height: 16),
@@ -177,18 +156,22 @@ class _DonationScreenState extends State<DonationScreen> {
                             crossAxisCount: 2,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
-                            childAspectRatio:
-                                0.85, // Made taller to fit content
+                            childAspectRatio: 0.7,
                           ),
                           itemCount: tiers.length,
                           itemBuilder: (context, index) {
-                            return DonationTierCard(
-                              tier: tiers[index],
-                              index: index,
-                              isProcessing: _isProcessing,
-                              donationService: _donationService,
-                              onDonationSelected: _handleDonation,
-                            );
+                            return _buildAmountCard(
+                                    context, tiers[index], index)
+                                .animate()
+                                .fadeIn(
+                                  delay: Duration(milliseconds: 100 * index),
+                                  duration: const Duration(milliseconds: 400),
+                                )
+                                .scale(
+                                  begin: const Offset(0.8, 0.8),
+                                  end: const Offset(1.0, 1.0),
+                                  delay: Duration(milliseconds: 100 * index),
+                                );
                           },
                         ),
                       ),
@@ -205,57 +188,110 @@ class _DonationScreenState extends State<DonationScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryGreen,
-            AppTheme.darkGreen,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryGreen.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(16),
+      decoration: AppTheme.glassmorphism(),
       child: Row(
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+            icon: const Icon(Icons.arrow_back_rounded),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   AppStrings.get(context, 'donationScreenTitle'),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                 ),
-                const SizedBox(height: 1),
                 Text(
-                  AppStrings.get(context, 'donationHeaderSubtitle'),
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 11,
-                  ),
+                  'Sedekah jariyah untuk kemajuan aplikasi',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAmountCard(BuildContext context, DonationTier tier, int index) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            tier.gradientColors[0].withValues(alpha: 0.1),
+            tier.gradientColors[1].withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: tier.gradientColors[0].withValues(alpha: 0.3),
+          width: 1.5,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isProcessing ? null : () => _handleDonation(tier),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: tier.gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: tier.gradientColors[1].withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    tier.icon,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  tier.formattedAmount,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: tier.gradientColors[0],
+                      ),
+                ),
+                const SizedBox(height: 4),
+                if (_isProcessing)
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -344,15 +380,12 @@ class _DonationScreenState extends State<DonationScreen> {
                       fontWeight: FontWeight.bold,
                       color: AppTheme.primaryGreen,
                     ),
-                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 AppStrings.get(context, 'donationSuccessMessage'),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[700],
-                    ),
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: 24),
               SizedBox(

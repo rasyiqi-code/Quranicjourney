@@ -26,14 +26,33 @@ class _TadabburScreenState extends State<TadabburScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryGreen,
+                AppTheme.darkGreen,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        toolbarHeight: 48,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_rounded,
+            color: Colors.white,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           languageCode == 'en' ? 'Tadabbur Mode' : 'Mode Tadabbur',
           style: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Colors.white,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.black87),
       ),
       body: Consumer<TadabburProvider>(
         builder: (context, provider, child) {
