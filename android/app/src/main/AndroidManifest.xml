@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     
     <application
-        android:label="quranic_journey"
+        android:label="Quranic Journey"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="false"

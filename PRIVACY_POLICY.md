@@ -58,7 +58,7 @@ This app uses the following third-party services:
 
 #### 4.2 Audio Streaming
 - **Purpose**: Stream Quranic recitations
-- **Source**: Publicly available recitations from everyayah.com
+- **Source**: Audio files are downloaded and stored locally on your device for offline playback.
 - **Data Shared**: Audio file requests only
 
 ### 5. Children's Privacy
@@ -149,7 +149,7 @@ Aplikasi ini menggunakan layanan pihak ketiga berikut:
 
 #### 4.2 Streaming Audio
 - **Tujuan**: Streaming bacaan Al-Quran
-- **Sumber**: Bacaan yang tersedia secara publik dari everyayah.com
+- **Sumber**: File audio diunduh dan disimpan secara lokal di perangkat Anda untuk pemutaran offline.
 - **Data yang Dibagikan**: Hanya permintaan file audio
 
 ### 5. Privasi Anak-Anak

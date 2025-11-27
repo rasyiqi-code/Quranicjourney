@@ -1,5 +1,7 @@
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter/material.dart';
+
 import 'package:quran/quran.dart' as quran;
+import 'package:quran_library/quran_library.dart';
 import 'dart:async';
 
 class AudioPlayerService {
@@ -19,6 +21,7 @@ class AudioPlayerService {
   );
 
   int? _currentSurahId;
+  final QuranLibrary _quranLibrary = QuranLibrary();
 
   AudioPlayerService._();
 
@@ -28,54 +31,122 @@ class AudioPlayerService {
   }
 
   AudioPlayer get player => _audioPlayer;
+  QuranLibrary get quranLibrary => _quranLibrary;
 
-  Future<void> initSurahPlaylist(int surahNumber, int totalAyahs) async {
-    if (_currentSurahId == surahNumber) return;
+  // Convert surah and ayah to unique ayah number for quran_library
+  int getUniqueAyahNumber(int surahNumber, int ayahNumber) {
+    int uniqueNumber = 0;
+    for (int i = 1; i < surahNumber; i++) {
+      uniqueNumber += quran.getVerseCount(i);
+    }
+    uniqueNumber += ayahNumber;
+    return uniqueNumber;
+  }
 
-    _currentSurahId = surahNumber;
-    final children = List<AudioSource>.generate(totalAyahs, (index) {
-      final surah = surahNumber.toString().padLeft(3, '0');
-      final ayah = (index + 1).toString().padLeft(3, '0');
-      final url = 'https://everyayah.com/data/Alafasy_128kbps/$surah$ayah.mp3';
-      return AudioSource.uri(Uri.parse(url));
-    });
+  // Check if audio is downloaded for a surah
+  Future<bool> isAudioDownloaded(int surahNumber) async {
+    // quran_library handles this internally
+    // We'll check if we can play without network
+    // For now, assume it's available if downloaded previously
+    return true; // quran_library will handle download/streaming automatically
+  }
 
+  // Download surah audio for offline playback
+  Future<void> downloadSurah(int surahNumber) async {
     try {
-      await _audioPlayer.setAudioSources(children);
+      await _quranLibrary.startDownloadSurah(surahNumber: surahNumber);
     } catch (e) {
-      throw Exception('Gagal memuat playlist: $e');
+      throw Exception('Gagal mengunduh audio: $e');
     }
   }
 
+  // Cancel ongoing download
+  void cancelDownload() {
+    _quranLibrary.cancelDownloadSurah();
+  }
+
+  // Initialize playlist for a surah (for backward compatibility)
+  Future<void> initSurahPlaylist(int surahNumber, int totalAyahs) async {
+    if (_currentSurahId == surahNumber) return;
+    _currentSurahId = surahNumber;
+
+    // With quran_library, we don't need to pre-build playlist
+    // It handles the audio sources internally
+    // Just mark that we're ready to play this surah
+  }
+
+  // Play entire surah from beginning
   Future<void> playSurah(int surahNumber,
       {quran.Reciter reciter = quran.Reciter.arAlafasy}) async {
     try {
-      final url = quran.getAudioURLBySurah(surahNumber, reciter: reciter);
-      await _audioPlayer.setUrl(url);
-      await _audioPlayer.play();
+      _currentSurahId = surahNumber;
+      await _quranLibrary.playSurah(surahNumber: surahNumber);
     } catch (e) {
       throw Exception('Gagal memutar audio: $e');
     }
   }
 
-  Future<void> playAyah(int surahNumber, int ayahNumber) async {
+  // Play specific ayah
+  Future<void> playAyah(
+      BuildContext context, int surahNumber, int ayahNumber) async {
     try {
-      if (_currentSurahId == surahNumber) {
-        await _audioPlayer.seek(Duration.zero, index: ayahNumber - 1);
-        await _audioPlayer.play();
-      } else {
-        final surah = surahNumber.toString().padLeft(3, '0');
-        final ayah = ayahNumber.toString().padLeft(3, '0');
-        final url =
-            'https://everyayah.com/data/Alafasy_128kbps/$surah$ayah.mp3';
+      _currentSurahId = surahNumber;
+      final uniqueAyahNumber = getUniqueAyahNumber(surahNumber, ayahNumber);
 
-        await _audioPlayer.setUrl(url);
-        await _audioPlayer.play();
-      }
+      // Always use playAyah as it handles seeking/playing
+      await _quranLibrary.playAyah(
+        context: context,
+        currentAyahUniqueNumber: uniqueAyahNumber,
+        playSingleAyah: false, // Continue playing subsequent ayahs
+      );
     } catch (e) {
       throw Exception('Gagal memutar audio: $e');
     }
   }
+
+  // Seek to next ayah
+  Future<void> seekNextAyah(BuildContext context, int currentSurahNumber,
+      int currentAyahNumber) async {
+    try {
+      final uniqueAyahNumber =
+          getUniqueAyahNumber(currentSurahNumber, currentAyahNumber);
+      await _quranLibrary.seekNextAyah(
+          context: context, currentAyahUniqueNumber: uniqueAyahNumber);
+    } catch (e) {
+      throw Exception('Gagal melanjutkan ke ayat berikutnya: $e');
+    }
+  }
+
+  // Seek to previous ayah
+  Future<void> seekPreviousAyah(BuildContext context, int currentSurahNumber,
+      int currentAyahNumber) async {
+    try {
+      final uniqueAyahNumber =
+          getUniqueAyahNumber(currentSurahNumber, currentAyahNumber);
+      await _quranLibrary.seekPreviousAyah(
+          context: context, currentAyahUniqueNumber: uniqueAyahNumber);
+    } catch (e) {
+      throw Exception('Gagal kembali ke ayat sebelumnya: $e');
+    }
+  }
+
+  // Play from last saved position
+  Future<void> playFromLastPosition() async {
+    try {
+      await _quranLibrary.playLastPosition();
+    } catch (e) {
+      throw Exception('Gagal memutar dari posisi terakhir: $e');
+    }
+  }
+
+  // Get last position as duration
+  Duration get lastPosition => _quranLibrary.formatLastPositionToDuration;
+
+  // Get last position as formatted time string
+  String get lastPositionTime => _quranLibrary.formatLastPositionToTime;
+
+  // Get current/last surah number
+  int get currentSurahNumber => _quranLibrary.currentAndLastSurahNumber;
 
   Future<void> pause() async {
     await _audioPlayer.pause();

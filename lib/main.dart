@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'core/providers/user_progress_provider.dart';
 import 'core/providers/tadabbur_provider.dart';
@@ -35,6 +36,9 @@ void main() async {
       await prefs.setString('gemini_api_key', defaultApiKey);
     }
   }
+
+  // Enable wakelock to keep screen awake while app is running
+  await WakelockPlus.enable();
 
   runApp(
     MultiProvider(

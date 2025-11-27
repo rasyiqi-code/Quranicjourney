@@ -73,6 +73,20 @@ class AppStrings {
       'tryAgain': 'Coba Lagi',
       'close': 'Tutup',
       'features': 'Benefit',
+      // Audio Download
+      'downloadAudio': 'Unduh Audio',
+      'audioDownloading': 'Mengunduh Audio...',
+      'audioDownloadComplete': 'Audio Terunduh',
+      'audioNotDownloaded': 'Audio Belum Diunduh',
+      'downloadPrompt': 'Unduh audio untuk mendengarkan ayat secara offline',
+      'download': 'Unduh',
+      'downloading': 'Mengunduh',
+      'cancelDownload': 'Batalkan',
+      'offlineAudio': 'Audio Offline',
+      'downloadSize': 'Ukuran',
+      'storageRequired': 'Penyimpanan Dibutuhkan',
+      'downloadFailed': 'Unduhan Gagal',
+      'downloadCancelled': 'Unduhan Dibatalkan',
       // Tadabbur content (Indonesian)
       // Connection strings
       'connection_sedih':
@@ -448,6 +462,20 @@ class AppStrings {
       'tryAgain': 'Try Again',
       'close': 'Close',
       'features': 'Benefits',
+      // Audio Download
+      'downloadAudio': 'Download Audio',
+      'audioDownloading': 'Downloading Audio...',
+      'audioDownloadComplete': 'Audio Downloaded',
+      'audioNotDownloaded': 'Audio Not Downloaded',
+      'downloadPrompt': 'Download audio to listen to verses offline',
+      'download': 'Download',
+      'downloading': 'Downloading',
+      'cancelDownload': 'Cancel',
+      'offlineAudio': 'Offline Audio',
+      'downloadSize': 'Size',
+      'storageRequired': 'Storage Required',
+      'downloadFailed': 'Download Failed',
+      'downloadCancelled': 'Download Cancelled',
       // Tadabbur content (English)
       // Connection strings
       'connection_sedih':

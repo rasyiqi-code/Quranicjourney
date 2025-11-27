@@ -11,6 +11,7 @@ import '../widgets/flipbook_view.dart';
 import '../theme/app_theme.dart';
 import 'surah_list_screen.dart';
 import '../../core/l10n/app_strings.dart';
+import '../widgets/audio_download_dialog.dart';
 
 import '../../core/providers/language_provider.dart';
 
@@ -115,7 +116,9 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
       // 2. Audio is at the correct track but PAUSED (need to resume/replay)
       if (currentAudioIndex != index || !_isPlaying) {
         // Auto-play next ayah if Audio Mode is enabled
-        _audioService.playAyah(_currentSurah, _currentAyah).catchError((e) {
+        _audioService
+            .playAyah(context, _currentSurah, _currentAyah)
+            .catchError((e) {
           if (mounted && !_isDisposing) {
             final errorMessage = e.toString();
             // Ignore "Loading interrupted" error which happens when stopping audio while loading
@@ -278,6 +281,25 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
             },
             tooltip: 'Daftar Surah',
           ),
+          IconButton(
+            icon: const Icon(
+              Icons.download_rounded,
+              color: Colors.white,
+            ),
+            iconSize: 22,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            constraints: const BoxConstraints(),
+            onPressed: () {
+              final surahName =
+                  _quranService.getSurahInfo(_currentSurah)['name'];
+              showAudioDownloadDialog(
+                context: context,
+                surahNumber: _currentSurah,
+                surahName: surahName,
+              );
+            },
+            tooltip: AppStrings.get(context, 'downloadAudio'),
+          ),
         ],
       ),
       body: Container(
@@ -404,6 +426,7 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                   iconSize: 32,
                   onPressed: () async {
                     if (!mounted) return;
+                    final downloadLabel = AppStrings.get(context, 'download');
                     final messenger = ScaffoldMessenger.of(context);
                     try {
                       if (_isPlaying) {
@@ -416,12 +439,29 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                           _isAudioEnabled = true;
                         });
                         await _audioService.playAyah(
-                            _currentSurah, _currentAyah);
+                            context, _currentSurah, _currentAyah);
                       }
                     } catch (e) {
                       if (!mounted) return;
+                      // If playback fails, suggest downloading
                       messenger.showSnackBar(
-                        SnackBar(content: Text('Error: $e')),
+                        SnackBar(
+                          content: Text(
+                              'Gagal memutar audio. Pastikan audio sudah diunduh.'),
+                          action: SnackBarAction(
+                            label: downloadLabel,
+                            textColor: Colors.white,
+                            onPressed: () {
+                              final surahName = _quranService
+                                  .getSurahInfo(_currentSurah)['name'];
+                              showAudioDownloadDialog(
+                                context: context,
+                                surahNumber: _currentSurah,
+                                surahName: surahName,
+                              );
+                            },
+                          ),
+                        ),
                       );
                     }
                   },
