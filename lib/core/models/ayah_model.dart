@@ -51,4 +51,3 @@ class AyahModel {
 
   String get fullReference => '$surahName:$ayahNumber';
 }
-

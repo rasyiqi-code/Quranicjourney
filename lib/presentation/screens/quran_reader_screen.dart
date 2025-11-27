@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../core/services/quran_service.dart';
 import '../../core/services/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import '../../core/providers/user_progress_provider.dart';
 import '../../core/providers/bookmark_provider.dart';
 import '../../core/models/bookmark_model.dart';
@@ -11,7 +12,6 @@ import '../widgets/flipbook_view.dart';
 import '../theme/app_theme.dart';
 import 'surah_list_screen.dart';
 import '../../core/l10n/app_strings.dart';
-import '../widgets/audio_download_dialog.dart';
 
 import '../../core/providers/language_provider.dart';
 
@@ -36,7 +36,6 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
   late int _currentAyah;
   bool _showTranslation = false;
   bool _autoPlay = true;
-  bool _isAudioEnabled = false;
   bool _isPlaying = false;
   bool _isDisposing = false;
   FlipBookController? _flipBookController;
@@ -50,47 +49,25 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
     _currentAyah = widget.initialAyah ?? 1;
     _flipBookController = FlipBookController();
 
+    // Listen to audio player state
     _audioService.playerStateStream.listen((state) {
       if (mounted) {
         setState(() {
-          _isPlaying = state.playing;
+          _isPlaying = state.playing &&
+              state.processingState != ProcessingState.completed;
         });
       }
     });
 
-    // Listen to audio index changes to sync UI
-    _audioService.player.currentIndexStream.listen((index) {
-      if (mounted && index != null) {
-        final newAyah = index + 1;
-
-        // Only react if audio index is different from current UI (meaning audio moved ahead)
-        if (_currentAyah != newAyah) {
-          if (_autoPlay) {
-            // Auto-play ON: Sync UI with Audio
-            _flipBookController?.goToPage(index);
-            setState(() {
-              _currentAyah = newAyah;
-            });
-          } else {
-            // Auto-play OFF: Pause Audio and stay on current page
-            _audioService.pause();
-          }
-        }
-      }
-    });
+    // Audio listener removed as we use state stream now
   }
 
-  void _initializeData(String languageCode) {
+  void _initializeData(String languageCode) async {
     final translationCode = languageCode == 'en' ? 'en' : 'id';
-    _ayahs =
-        _quranService.getSurah(_currentSurah, translationCode: translationCode);
+    _ayahs = await _quranService.getSurah(_currentSurah,
+        translationCode: translationCode);
 
-    // Initialize playlist
-    final surahInfo = _quranService.getSurahInfo(_currentSurah);
-    final totalAyahs = surahInfo['verseCount'] as int;
-    _audioService.initSurahPlaylist(_currentSurah, totalAyahs).catchError((e) {
-      debugPrint('Error initializing playlist: $e');
-    });
+    // Playlist initialization removed as we play individual ayahs now
   }
 
   @override
@@ -105,20 +82,17 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
       _currentAyah = index + 1;
     });
 
-    if (_isAudioEnabled) {
+    if (_autoPlay) {
       // Check if audio is already playing the correct track to avoid infinite loop
       // (UI update -> audio seek -> UI update)
-      final currentAudioIndex = _audioService.player.currentIndex;
 
       // Play if:
       // 1. Audio is at a different track (need to seek)
       // OR
       // 2. Audio is at the correct track but PAUSED (need to resume/replay)
-      if (currentAudioIndex != index || !_isPlaying) {
+      if (_audioService.currentAyah != _currentAyah || !_isPlaying) {
         // Auto-play next ayah if Audio Mode is enabled
-        _audioService
-            .playAyah(context, _currentSurah, _currentAyah)
-            .catchError((e) {
+        _audioService.playAyah(_currentSurah, _currentAyah).catchError((e) {
           if (mounted && !_isDisposing) {
             final errorMessage = e.toString();
             // Ignore "Loading interrupted" error which happens when stopping audio while loading
@@ -192,16 +166,27 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                 iconSize: 22,
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 constraints: const BoxConstraints(),
-                onPressed: () {
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final bookmarkProvider =
+                      Provider.of<BookmarkProvider>(context, listen: false);
+                  final isBookmarked = bookmarkProvider.isBookmarked(
+                      _currentSurah, _currentAyah);
+
+                  // Capture strings before async to avoid context usage across gap
+                  final removedMsg = AppStrings.get(context, 'bookmarkRemoved');
+                  final addedMsg = AppStrings.get(context, 'bookmarkAdded');
+
                   final ayah =
-                      _quranService.getAyah(_currentSurah, _currentAyah);
+                      await _quranService.getAyah(_currentSurah, _currentAyah);
+
+                  if (!mounted) return;
+
                   if (isBookmarked) {
                     bookmarkProvider.removeBookmark(
                         _currentSurah, _currentAyah);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text(AppStrings.get(context, 'bookmarkRemoved'))),
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(removedMsg)),
                     );
                   } else {
                     bookmarkProvider.addBookmark(BookmarkModel(
@@ -211,10 +196,8 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                       surahNameArabic: ayah.surahNameArabic,
                       createdAt: DateTime.now(),
                     ));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text(AppStrings.get(context, 'bookmarkAdded'))),
+                    messenger.showSnackBar(
+                      SnackBar(content: Text(addedMsg)),
                     );
                   }
                 },
@@ -280,25 +263,6 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
               );
             },
             tooltip: 'Daftar Surah',
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.download_rounded,
-              color: Colors.white,
-            ),
-            iconSize: 22,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            constraints: const BoxConstraints(),
-            onPressed: () {
-              final surahName =
-                  _quranService.getSurahInfo(_currentSurah)['name'];
-              showAudioDownloadDialog(
-                context: context,
-                surahNumber: _currentSurah,
-                surahName: surahName,
-              );
-            },
-            tooltip: AppStrings.get(context, 'downloadAudio'),
           ),
         ],
       ),
@@ -426,42 +390,29 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                   iconSize: 32,
                   onPressed: () async {
                     if (!mounted) return;
-                    final downloadLabel = AppStrings.get(context, 'download');
                     final messenger = ScaffoldMessenger.of(context);
                     try {
                       if (_isPlaying) {
                         setState(() {
-                          _isAudioEnabled = false;
+                          _isPlaying =
+                              false; // Update local state immediately for UI
                         });
                         await _audioService.pause();
                       } else {
                         setState(() {
-                          _isAudioEnabled = true;
+                          _isPlaying =
+                              true; // Update local state immediately for UI
                         });
                         await _audioService.playAyah(
-                            context, _currentSurah, _currentAyah);
+                            _currentSurah, _currentAyah);
                       }
                     } catch (e) {
                       if (!mounted) return;
-                      // If playback fails, suggest downloading
+                      setState(() {
+                        _isPlaying = false; // Revert state on error
+                      });
                       messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                              'Gagal memutar audio. Pastikan audio sudah diunduh.'),
-                          action: SnackBarAction(
-                            label: downloadLabel,
-                            textColor: Colors.white,
-                            onPressed: () {
-                              final surahName = _quranService
-                                  .getSurahInfo(_currentSurah)['name'];
-                              showAudioDownloadDialog(
-                                context: context,
-                                surahNumber: _currentSurah,
-                                surahName: surahName,
-                              );
-                            },
-                          ),
-                        ),
+                        SnackBar(content: Text('Error: $e')),
                       );
                     }
                   },
@@ -470,18 +421,23 @@ class _QuranReaderScreenState extends State<QuranReaderScreen> {
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final progressProvider =
+                      Provider.of<UserProgressProvider>(context, listen: false);
+
                   final ayah =
-                      _quranService.getAyah(_currentSurah, _currentAyah);
+                      await _quranService.getAyah(_currentSurah, _currentAyah);
+
+                  if (!mounted) return;
+
                   final letterCount =
                       _quranService.countHijaiyahLetters(ayah.arabicText);
                   final points = letterCount * 10;
 
-                  final progressProvider =
-                      Provider.of<UserProgressProvider>(context, listen: false);
                   progressProvider.addAyahRead(points);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
                       content: Text(
                         '+$points Pahala! ($letterCount Huruf x 10)',

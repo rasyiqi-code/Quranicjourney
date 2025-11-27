@@ -21,8 +21,6 @@ dependencies:
   cached_network_image: ^3.3.0
   google_fonts: ^6.1.0
   flutter_animate: ^4.3.0
-  quran: ^1.4.1
-  quran_library: ^2.3.0
   just_audio: ^0.10.5
   audio_service: ^0.18.11
   shimmer: ^3.0.0
@@ -33,6 +31,7 @@ dependencies:
   marquee: ^2.3.0
   in_app_purchase: ^3.2.0
   wakelock_plus: ^1.2.8
+  quran: ^1.4.1
 
 dev_dependencies:
   flutter_test:

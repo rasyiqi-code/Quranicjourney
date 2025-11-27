@@ -1,179 +1,134 @@
-import 'package:flutter/material.dart';
-
-import 'package:quran/quran.dart' as quran;
-import 'package:quran_library/quran_library.dart';
-import 'dart:async';
+import 'dart:io';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
 class AudioPlayerService {
-  static AudioPlayerService? _instance;
-  final AudioPlayer _audioPlayer = AudioPlayer(
-    audioLoadConfiguration: const AudioLoadConfiguration(
-      androidLoadControl: AndroidLoadControl(
-        minBufferDuration: Duration(seconds: 15),
-        maxBufferDuration: Duration(seconds: 50),
-        bufferForPlaybackDuration: Duration(seconds: 2),
-        bufferForPlaybackAfterRebufferDuration: Duration(seconds: 5),
-      ),
-      darwinLoadControl: DarwinLoadControl(
-        automaticallyWaitsToMinimizeStalling: true,
-      ),
-    ),
-  );
+  static final AudioPlayerService _instance = AudioPlayerService._internal();
+  factory AudioPlayerService() => _instance;
+  AudioPlayerService._internal();
 
-  int? _currentSurahId;
-  final QuranLibrary _quranLibrary = QuranLibrary();
+  final AudioPlayer _player = AudioPlayer();
+  bool _isPlaying = false;
+  int? _currentSurah;
+  int? _currentAyah;
 
-  AudioPlayerService._();
+  bool get isPlaying => _isPlaying;
+  int? get currentSurah => _currentSurah;
+  int? get currentAyah => _currentAyah;
 
-  factory AudioPlayerService() {
-    _instance ??= AudioPlayerService._();
-    return _instance!;
+  // Stream for player state changes
+  Stream<PlayerState> get playerStateStream => _player.playerStateStream;
+
+  // Get audio URL for specific ayah
+  String _getAudioUrl(int surah, int ayah) {
+    String surahStr = surah.toString().padLeft(3, '0');
+    String ayahStr = ayah.toString().padLeft(3, '0');
+    // Using Alafasy recitation as default
+    return 'https://everyayah.com/data/Alafasy_128kbps/$surahStr$ayahStr.mp3';
   }
 
-  AudioPlayer get player => _audioPlayer;
-  QuranLibrary get quranLibrary => _quranLibrary;
-
-  // Convert surah and ayah to unique ayah number for quran_library
-  int getUniqueAyahNumber(int surahNumber, int ayahNumber) {
-    int uniqueNumber = 0;
-    for (int i = 1; i < surahNumber; i++) {
-      uniqueNumber += quran.getVerseCount(i);
+  // Get local file path for specific ayah
+  Future<String> _getLocalFilePath(int surah, int ayah) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${directory.path}/audio_cache');
+    if (!await audioDir.exists()) {
+      await audioDir.create(recursive: true);
     }
-    uniqueNumber += ayahNumber;
-    return uniqueNumber;
+    return '${audioDir.path}/${surah}_$ayah.mp3';
   }
 
-  // Check if audio is downloaded for a surah
-  Future<bool> isAudioDownloaded(int surahNumber) async {
-    // quran_library handles this internally
-    // We'll check if we can play without network
-    // For now, assume it's available if downloaded previously
-    return true; // quran_library will handle download/streaming automatically
+  // Check if audio file exists locally
+  Future<bool> _isAudioCached(int surah, int ayah) async {
+    final path = await _getLocalFilePath(surah, ayah);
+    return File(path).exists();
   }
 
-  // Download surah audio for offline playback
-  Future<void> downloadSurah(int surahNumber) async {
+  // Download audio file
+  Future<String> _downloadAudio(int surah, int ayah) async {
+    final url = _getAudioUrl(surah, ayah);
+    final path = await _getLocalFilePath(surah, ayah);
+    final file = File(path);
+
+    if (await file.exists()) {
+      return path;
+    }
+
     try {
-      await _quranLibrary.startDownloadSurah(surahNumber: surahNumber);
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+        return path;
+      } else {
+        throw Exception('Failed to download audio: ${response.statusCode}');
+      }
     } catch (e) {
-      throw Exception('Gagal mengunduh audio: $e');
+      throw Exception('Error downloading audio: $e');
     }
   }
 
-  // Cancel ongoing download
-  void cancelDownload() {
-    _quranLibrary.cancelDownloadSurah();
-  }
-
-  // Initialize playlist for a surah (for backward compatibility)
-  Future<void> initSurahPlaylist(int surahNumber, int totalAyahs) async {
-    if (_currentSurahId == surahNumber) return;
-    _currentSurahId = surahNumber;
-
-    // With quran_library, we don't need to pre-build playlist
-    // It handles the audio sources internally
-    // Just mark that we're ready to play this surah
-  }
-
-  // Play entire surah from beginning
-  Future<void> playSurah(int surahNumber,
-      {quran.Reciter reciter = quran.Reciter.arAlafasy}) async {
+  // Play ayah audio
+  Future<void> playAyah(int surah, int ayah) async {
     try {
-      _currentSurahId = surahNumber;
-      await _quranLibrary.playSurah(surahNumber: surahNumber);
+      _currentSurah = surah;
+      _currentAyah = ayah;
+      _isPlaying = true;
+
+      // Check if cached
+      final isCached = await _isAudioCached(surah, ayah);
+
+      if (isCached) {
+        final path = await _getLocalFilePath(surah, ayah);
+        await _player.setFilePath(path);
+      } else {
+        // If not cached, play from URL and download in background
+        // OR download first then play (as requested "download to local storage")
+        // To ensure smooth UX, we'll try to download first, but if it takes too long
+        // we might want to stream.
+        // For now, let's follow the request: download then play.
+
+        // However, downloading might block UI if awaited.
+        // Let's download and await, showing loading state in UI is handled by FutureBuilder or async state.
+        final path = await _downloadAudio(surah, ayah);
+        await _player.setFilePath(path);
+      }
+
+      await _player.play();
+
+      // Reset state when finished
+      _player.playerStateStream.listen((state) {
+        if (state.processingState == ProcessingState.completed) {
+          _isPlaying = false;
+          _currentSurah = null;
+          _currentAyah = null;
+        }
+      });
     } catch (e) {
-      throw Exception('Gagal memutar audio: $e');
+      _isPlaying = false;
+      _currentSurah = null;
+      _currentAyah = null;
+      rethrow;
     }
   }
-
-  // Play specific ayah
-  Future<void> playAyah(
-      BuildContext context, int surahNumber, int ayahNumber) async {
-    try {
-      _currentSurahId = surahNumber;
-      final uniqueAyahNumber = getUniqueAyahNumber(surahNumber, ayahNumber);
-
-      // Always use playAyah as it handles seeking/playing
-      await _quranLibrary.playAyah(
-        context: context,
-        currentAyahUniqueNumber: uniqueAyahNumber,
-        playSingleAyah: false, // Continue playing subsequent ayahs
-      );
-    } catch (e) {
-      throw Exception('Gagal memutar audio: $e');
-    }
-  }
-
-  // Seek to next ayah
-  Future<void> seekNextAyah(BuildContext context, int currentSurahNumber,
-      int currentAyahNumber) async {
-    try {
-      final uniqueAyahNumber =
-          getUniqueAyahNumber(currentSurahNumber, currentAyahNumber);
-      await _quranLibrary.seekNextAyah(
-          context: context, currentAyahUniqueNumber: uniqueAyahNumber);
-    } catch (e) {
-      throw Exception('Gagal melanjutkan ke ayat berikutnya: $e');
-    }
-  }
-
-  // Seek to previous ayah
-  Future<void> seekPreviousAyah(BuildContext context, int currentSurahNumber,
-      int currentAyahNumber) async {
-    try {
-      final uniqueAyahNumber =
-          getUniqueAyahNumber(currentSurahNumber, currentAyahNumber);
-      await _quranLibrary.seekPreviousAyah(
-          context: context, currentAyahUniqueNumber: uniqueAyahNumber);
-    } catch (e) {
-      throw Exception('Gagal kembali ke ayat sebelumnya: $e');
-    }
-  }
-
-  // Play from last saved position
-  Future<void> playFromLastPosition() async {
-    try {
-      await _quranLibrary.playLastPosition();
-    } catch (e) {
-      throw Exception('Gagal memutar dari posisi terakhir: $e');
-    }
-  }
-
-  // Get last position as duration
-  Duration get lastPosition => _quranLibrary.formatLastPositionToDuration;
-
-  // Get last position as formatted time string
-  String get lastPositionTime => _quranLibrary.formatLastPositionToTime;
-
-  // Get current/last surah number
-  int get currentSurahNumber => _quranLibrary.currentAndLastSurahNumber;
 
   Future<void> pause() async {
-    await _audioPlayer.pause();
-  }
-
-  Future<void> resume() async {
-    await _audioPlayer.play();
+    await _player.pause();
+    _isPlaying = false;
   }
 
   Future<void> stop() async {
-    await _audioPlayer.stop();
+    await _player.stop();
+    _isPlaying = false;
+    _currentSurah = null;
+    _currentAyah = null;
   }
 
-  Future<void> seek(Duration position) async {
-    await _audioPlayer.seek(position);
+  Future<void> resume() async {
+    await _player.play();
+    _isPlaying = true;
   }
-
-  Stream<Duration> get positionStream => _audioPlayer.positionStream;
-  Stream<Duration?> get durationStream => _audioPlayer.durationStream;
-  Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
-
-  Duration? get duration => _audioPlayer.duration;
-  Duration get position => _audioPlayer.position;
-  bool get playing => _audioPlayer.playing;
-  bool get paused => !_audioPlayer.playing;
 
   void dispose() {
-    _audioPlayer.dispose();
+    _player.dispose();
   }
 }

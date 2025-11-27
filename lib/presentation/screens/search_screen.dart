@@ -275,111 +275,132 @@ class _SearchScreenState extends State<SearchScreen> {
                 itemCount: _searchResults.length,
                 itemBuilder: (context, index) {
                   final result = _searchResults[index];
-                  final ayah = _quranService.getAyah(
-                    result['surahNumber'] as int,
-                    result['ayahNumber'] as int,
-                    translationCode: languageCode == 'en' ? 'en' : 'id',
-                  );
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  return FutureBuilder(
+                    future: _quranService.getAyah(
+                      result['surahNumber'] as int,
+                      result['ayahNumber'] as int,
+                      translationCode: languageCode == 'en' ? 'en' : 'id',
                     ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(16),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            PageTransitions.slideRoute(
-                              QuranReaderScreen(
-                                surahNumber: result['surahNumber'] as int,
-                                initialAyah: result['ayahNumber'] as int,
-                              ),
-                            ),
-                          );
-                        },
-                        child: Padding(
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+
+                      final ayah = snapshot.data!;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageTransitions.slideRoute(
+                                  QuranReaderScreen(
+                                    surahNumber: result['surahNumber'] as int,
+                                    initialAyah: result['ayahNumber'] as int,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      gradient: AppTheme.primaryGradient,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        '${result['surahNumber']}',
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          gradient: AppTheme.primaryGradient,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '${result['surahNumber']}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          ayah.fullReference,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              ayah.fullReference,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${languageCode == 'en' ? 'Verse' : 'Ayat'} ${result['ayahNumber']}',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        Text(
-                                          '${languageCode == 'en' ? 'Verse' : 'Ayat'} ${result['ayahNumber']}',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_forward_ios_rounded,
+                                        size: 16,
+                                        color: AppTheme.primaryGreen,
+                                      ),
+                                    ],
                                   ),
-                                  Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    size: 16,
-                                    color: AppTheme.primaryGreen,
+                                  const SizedBox(height: 12),
+                                  Text(
+                                    result['text'] as String,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      height: 1.6,
+                                      color: Colors.grey[800],
+                                    ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                result['text'] as String,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  height: 1.6,
-                                  color: Colors.grey[800],
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   );
                 },
               ),

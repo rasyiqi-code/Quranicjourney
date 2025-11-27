@@ -33,7 +33,7 @@ class _RandomAyahScreenState extends State<RandomAyahScreen> {
     });
   }
 
-  void _generateRandomAyah() {
+  void _generateRandomAyah() async {
     final languageCode = Provider.of<LanguageProvider>(context, listen: false)
         .currentLocale
         .languageCode;
@@ -48,20 +48,22 @@ class _RandomAyahScreenState extends State<RandomAyahScreen> {
 
     // Get the ayah details
     final translationCode = languageCode == 'en' ? 'en' : 'id';
-    final ayah = _quranService.getAyah(
+    final ayah = await _quranService.getAyah(
       randomSurah,
       randomAyah,
       translationCode: translationCode,
     );
 
-    setState(() {
-      _currentSurah = randomSurah;
-      _currentAyah = randomAyah;
-      _arabicText = ayah.arabicText;
-      _translation = ayah.translation;
-      _surahName = ayah.surahName;
-      _surahNameArabic = ayah.surahNameArabic;
-    });
+    if (mounted) {
+      setState(() {
+        _currentSurah = randomSurah;
+        _currentAyah = randomAyah;
+        _arabicText = ayah.arabicText;
+        _translation = ayah.translation;
+        _surahName = ayah.surahName;
+        _surahNameArabic = ayah.surahNameArabic;
+      });
+    }
   }
 
   @override

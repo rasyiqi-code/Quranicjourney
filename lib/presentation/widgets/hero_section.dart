@@ -36,8 +36,8 @@ class _HeroSectionState extends State<HeroSection> {
   @override
   void initState() {
     super.initState();
-    // Initial load will use default language (likely ID or EN based on system)
-    // We will update this in didChangeDependencies to handle context availability for provider
+    // Start with default message
+    _motivationalMessage = '';
   }
 
   @override
@@ -46,20 +46,32 @@ class _HeroSectionState extends State<HeroSection> {
     _updateMotivationalMessage();
   }
 
-  void _updateMotivationalMessage() {
-    final languageCode =
-        Provider.of<LanguageProvider>(context).currentLocale.languageCode;
+  void _updateMotivationalMessage() async {
+    final languageCode = Provider.of<LanguageProvider>(context, listen: false)
+        .currentLocale
+        .languageCode;
     final random = Random();
     final verse =
         _inspirationalVerses[random.nextInt(_inspirationalVerses.length)];
 
-    final ayah = QuranService().getAyah(verse['surah']!, verse['ayah']!,
-        translationCode: languageCode);
+    try {
+      final ayah = await QuranService().getAyah(verse['surah']!, verse['ayah']!,
+          translationCode: languageCode);
 
-    setState(() {
-      _motivationalMessage =
-          '"${ayah.translation}" (QS. ${ayah.surahName}: ${ayah.ayahNumber})';
-    });
+      if (mounted) {
+        setState(() {
+          _motivationalMessage =
+              '"${ayah.translation}" (QS. ${ayah.surahName}: ${ayah.ayahNumber})';
+        });
+      }
+    } catch (e) {
+      // If loading fails, show a default message
+      if (mounted) {
+        setState(() {
+          _motivationalMessage = 'Loading inspirational verse...';
+        });
+      }
+    }
   }
 
   String _getGreeting(BuildContext context) {
@@ -209,24 +221,27 @@ class _HeroSectionState extends State<HeroSection> {
                 Expanded(
                   child: SizedBox(
                     height: 20,
-                    child: Marquee(
-                      text: _motivationalMessage,
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: Colors.white.withValues(alpha: 0.95),
-                        fontStyle: FontStyle.italic,
-                      ),
-                      scrollAxis: Axis.horizontal,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      blankSpace: 20.0,
-                      velocity: 30.0,
-                      pauseAfterRound: const Duration(seconds: 3),
-                      startPadding: 10.0,
-                      accelerationDuration: const Duration(seconds: 1),
-                      accelerationCurve: Curves.linear,
-                      decelerationDuration: const Duration(milliseconds: 500),
-                      decelerationCurve: Curves.easeOut,
-                    ),
+                    child: _motivationalMessage.isEmpty
+                        ? const SizedBox()
+                        : Marquee(
+                            text: _motivationalMessage,
+                            style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.95),
+                              fontStyle: FontStyle.italic,
+                            ),
+                            scrollAxis: Axis.horizontal,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            blankSpace: 20.0,
+                            velocity: 30.0,
+                            pauseAfterRound: const Duration(seconds: 3),
+                            startPadding: 10.0,
+                            accelerationDuration: const Duration(seconds: 1),
+                            accelerationCurve: Curves.linear,
+                            decelerationDuration:
+                                const Duration(milliseconds: 500),
+                            decelerationCurve: Curves.easeOut,
+                          ),
                   ),
                 ),
               ],

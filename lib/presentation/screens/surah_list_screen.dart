@@ -44,10 +44,8 @@ class _SurahListScreenState extends State<SurahListScreen> {
                 surah['number'].toString().contains(query);
 
         final matchesFilter = _filterType == 'all' ||
-            (_filterType == 'makki' &&
-                surah['placeOfRevelation'] == 'Makkah') ||
-            (_filterType == 'madani' &&
-                surah['placeOfRevelation'] == 'Madinah');
+            (_filterType == 'makki' && surah['revelationType'] == 'Meccan') ||
+            (_filterType == 'madani' && surah['revelationType'] == 'Medinan');
 
         return matchesSearch && matchesFilter;
       }).toList();
@@ -359,16 +357,18 @@ class _SurahListScreenState extends State<SurahListScreen> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: (surah['placeOfRevelation'] == 'Makkah')
+                              color: (surah['revelationType'] == 'Meccan')
                                   ? Colors.orange.withValues(alpha: 0.15)
                                   : Colors.green.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              surah['placeOfRevelation'] as String,
+                              (surah['revelationType'] == 'Meccan')
+                                  ? 'Makki'
+                                  : 'Madani',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: (surah['placeOfRevelation'] == 'Makkah')
+                                color: (surah['revelationType'] == 'Meccan')
                                     ? Colors.orange[800]
                                     : Colors.green[800],
                                 fontWeight: FontWeight.bold,
