@@ -92,8 +92,8 @@ app.*.map.json
 
 # Web build artifacts
 /web/flutter_service_worker.js
-**/web/manifest.json
-**/web/sw.js
+/build/web/manifest.json
+/build/web/sw.js
 **/web/workbox-*.js
 
 # Node / NPM / Yarn
